@@ -12,14 +12,11 @@ import java.util.logging.Logger;
 
 public class CacheFilter extends ClientFilter {
 
-    private final static Logger logger = LogManager.getLogManager().getLogger(CacheFilter.class.getName());
-
     private final static Map<CacheKey, ClientRequestCache> cache = new TreeMap<>();
 
     @Override
     public ClientResponse handle(ClientRequest cr) throws ClientHandlerException {
         if (cr.getMethod().equals("GET")) {
-            //logger.finest("Handling a GET request");
             return handleGetRequest(cr);
         }
         return getNext().handle(cr);
@@ -27,7 +24,6 @@ public class CacheFilter extends ClientFilter {
 
     private ClientResponse handleGetRequest(ClientRequest cr) {
         ClientRequestCacheKey key = new ClientRequestCacheKey(cr);
-        //logger.finest("Cache key: " + key);
         ClientRequestCache crCache = cache.get(key);
         if (crCache == null || crCache.isExpired()) {
             crCache = new ClientRequestCache(getNext().handle(cr));

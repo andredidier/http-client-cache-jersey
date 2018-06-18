@@ -179,4 +179,28 @@ public class JerseyCacheTest {
 
         hoverfly.verify(b, times(2));
     }
+
+    @Test
+    @DisplayName("Test cache hit, post")
+    public void testCacheHitPost(Hoverfly hoverfly) {
+        String r = "{ \"message\": \"ok\" }";
+        RequestMatcherBuilder b = service("test").post("/v1/post-cache");
+        hoverfly.simulate(SimulationSource.dsl(
+                b.willReturn(success(r, "application/json")
+                        .header("Cache-Control", "private,max-age=10"))
+        ));
+        Client c = Client.create();
+        c.addFilter(new CacheFilter());
+        WebResource res = c.resource("http://test/v1/post-cache");
+
+        ClientResponse cr1 = res.post(ClientResponse.class);
+        assertEquals(200, cr1.getStatus());
+        assertEquals(r, cr1.getEntity(String.class));
+
+        ClientResponse cr2 = res.post(ClientResponse.class);
+        assertEquals(200, cr2.getStatus());
+        assertEquals(r, cr2.getEntity(String.class));
+
+        hoverfly.verify(b, times(2));
+    }
 }
