@@ -28,6 +28,9 @@ public class ClientResponseCacheControlHeader implements CacheControlHeader {
 
     @Override
     public boolean noStore() {
+        if (!headerRead) {
+            readHeader();
+        }
         return noStore;
     }
 
@@ -44,7 +47,7 @@ public class ClientResponseCacheControlHeader implements CacheControlHeader {
         Matcher noStoreMatcher = Pattern.compile("no-store").matcher(headerValue);
         this.noStore = noStoreMatcher.matches();
 
-        Matcher maxAgeMatcher = Pattern.compile("[private,|]\\s*max-age\\s*=\\s*(\\d+)").matcher(headerValue);
+        Matcher maxAgeMatcher = Pattern.compile("(?:private,|)\\s*max-age\\s*=\\s*(\\d+)").matcher(headerValue);
         if (maxAgeMatcher.matches()) {
             this.maxAge = Integer.parseInt(maxAgeMatcher.group(1));
         }
